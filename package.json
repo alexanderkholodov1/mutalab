@@ -1,0 +1,10 @@
+{
+  "name": "mutalab",
+  "version": "0.1.0",
+  "description": "Laboratorio de cruce de criaturas mutantes - version JavaScript",
+  "type": "module",
+  "main": "js/index.js",
+  "scripts": {
+    "start": "node js/index.js"
+  }
+}

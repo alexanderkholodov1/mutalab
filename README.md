@@ -1,100 +1,280 @@
-# Mutalab - Catálogo de Criaturas Mutantes
+# Mutalab API
 
-## Intención inicial
+API REST de un laboratorio de criaturas mutantes, construida con Node.js,
+Express y TypeScript. Entregable 2 de Desarrollo Web 3 (DIM-3203).
 
-Mutalab es un laboratorio genético de fantasía hecho a código. La idea es simple: tomo dos razas de un catálogo y las cruzo para ver qué sale. El programa valida si la combinación tiene sentido, calcula los atributos del híbrido y guarda la criatura resultante en un registro para poder revisarla después.
+## Tema
 
-La narrativa que uso de excusa es la de un genetista que trabaja en un mundo donde conviven criaturas de todo tipo (dragones, conejos, golems, lo que se me ocurra agregar al catálogo). Cada raza tiene sus propios atributos base y algunas restricciones de compatibilidad: no todo combina con todo, y esa validación es justo el tipo de lógica que quiero que quede clara y tipada más adelante en la versión TypeScript.
+Mutalab es el registro de un laboratorio clandestino que cataloga criaturas
+imaginarias y experimenta cruzandolas entre si. El backend tiene dos mitades
+que se conectan:
 
-Un cruce típico se vería así: elijo "Dragón" y "Conejo", el sistema revisa que la combinación sea viable, mezcla los atributos de ambas razas con algo de variación, le pone nombre al resultado ("Dranejo") y lo agrega al catálogo local de criaturas generadas.
+- **El catalogo**: un CRUD completo sobre las criaturas registradas.
+- **El laboratorio**: cruza dos especies, deriva los atributos del hibrido y
+  guarda en un historial tanto los cruces logrados como los rechazados. Cada
+  hibrido que nace entra automaticamente al catalogo, asi que despues se puede
+  consultar, editar o eliminar como cualquier otra criatura.
 
-### Restricciones
+No todas las especies son compatibles: un Dragon y un Golem se rechazan, y ese
+rechazo queda registrado como parte del historial del laboratorio.
 
-- No toda combinación de razas es válida; el sistema debe poder rechazar cruces incompatibles y explicar por qué.
-- La generación de la criatura y el guardado en el registro deben resolverse de forma asíncrona (promesas o async/await), simulando que el "laboratorio" tarda en procesar el cruce.
-- Todo cruce válido o inválido debe quedar registrado en algún tipo de historial, aunque sea en memoria.
+## Stack
 
-### Criterios de aceptación
+- Node.js con modulos ES (`"type": "module"`)
+- Express 5
+- TypeScript en modo `strict`, compilado a `dist/`
+- Almacenamiento en memoria (sin base de datos, segun el alcance del entregable)
 
-1. Dado un par de razas existentes en el catálogo, el sistema calcula y muestra una criatura híbrida con atributos derivados de ambas razas base.
-2. Dado un par de razas marcado como incompatible, el sistema rechaza el cruce y devuelve un mensaje claro sin romper la ejecución del programa.
-3. Toda criatura generada exitosamente queda almacenada en un catálogo/registro consultable, con su nombre, razas de origen y atributos.
-
-## Versión JavaScript
-
-Implementación no bloqueante del laboratorio en JavaScript avanzado, sin dependencias externas.
-
-### Estructura
-
-- `js/data/species.js`: catálogo de razas (atributos base y compatibilidad).
-- `js/lib/registry.js`: historial de cruces, implementado con un closure para mantener el estado privado.
-- `js/lib/lab.js`: lógica de cruce (`crossSpecies`), validación de compatibilidad y error de dominio `IncompatibleCrossError`.
-- `js/index.js`: punto de entrada ejecutable con datos de ejemplo.
-
-### Cómo ejecutar
+## Instalacion
 
 ```bash
-node js/index.js
-# o
+npm install
+```
+
+## Ejecucion
+
+```bash
 npm start
 ```
 
-### Conceptos de JavaScript avanzado usados
-
-- **Async/await y promesas**: `crossSpecies` es asíncrona y usa un `setTimeout` envuelto en `Promise` para simular el tiempo de procesamiento del laboratorio.
-- **Manejo de errores**: clase de error propia `IncompatibleCrossError` y bloques `try/catch` que registran tanto éxitos como rechazos sin detener la ejecución.
-- **Closures**: `createRegistry()` encapsula el arreglo de entradas del historial, expuesto solo a través de métodos (`addEntry`, `getAll`, `getSuccessful`, `getFailed`).
-- **Destructuring**: extracción de `baseAttributes`, opciones (`{ delayMs, ...deriveOptions }`) y pares de razas de ejemplo.
-- **Spread/rest**: combinación de atributos (`{ ...attrsA, ...attrsB }`), copia inmutable del historial (`[...entries]`) y rest en opciones de cruce.
-- **Funciones de orden superior**: `reduce`, `map` y `filter` para derivar atributos y filtrar el registro por estado.
-- **Módulos ES**: código dividido en módulos con `import`/`export` (`"type": "module"` en `package.json`).
-
-## Versión TypeScript
-
-Migración de la lógica anterior a TypeScript, haciendo explícitas las formas de datos, los estados permitidos y las funciones principales. El comportamiento en tiempo de ejecución es el mismo que la versión JavaScript.
-
-### Estructura
-
-- `ts/types.ts`: todas las formas de datos del dominio (razas, criaturas, entradas de historial, opciones).
-- `ts/data/species.ts`: catálogo de razas y validación de compatibilidad, ahora tipados.
-- `ts/lib/registry.ts`: historial tipado, con narrowing por `status` mediante type guards (`entry is SuccessEntry`).
-- `ts/lib/lab.ts`: `crossSpecies` tipada como `Promise<Creature>`, error de dominio tipado.
-- `ts/index.ts`: punto de entrada, con los cruces de ejemplo validados en tiempo de compilación.
-- `tsconfig.json`: configuración del compilador (`strict`, módulos `NodeNext` para ESM en Node).
-
-### Cómo compilar y ejecutar
+Compila TypeScript y levanta el servidor en `http://localhost:3000`.
+El puerto se puede cambiar con la variable de entorno `PORT`:
 
 ```bash
-npm install        # instala typescript y @types/node como devDependencies
-npm run build       # compila ts/ -> dist/ usando tsc
-npm run start:ts    # compila y ejecuta dist/index.js
+PORT=4000 npm start
 ```
 
-### Tipos personalizados (mínimo 3 requerido)
+Otros comandos:
 
-- `Attributes`, `Species`, `Creature` (interfaces para las formas de datos base).
-- `SuccessEntry` / `RejectedEntry` (interfaces) unidas en `RegistryEntry` (unión discriminada por `status`).
-- `Registry`, `DeriveOptions`, `CrossOptions` (interfaces para contratos de funciones/opciones).
+```bash
+npm run build      # solo compilar a dist/
+npm run typecheck  # verificar tipos sin generar archivos
+```
 
-### Unión literal (mínimo 1 requerido)
+## Estructura del proyecto
 
-- `SpeciesId = "dragon" | "conejo" | "golem" | "fenix" | "slime"`: representa las razas válidas del catálogo. Cualquier raza mal escrita (`"lobo"`, por ejemplo) es rechazada por el compilador antes de ejecutar el programa.
-- `CrossStatus = "success" | "rejected"`: representa el resultado de un cruce y es el discriminante de la unión `RegistryEntry`.
+El codigo esta separado por capas: cada archivo tiene una sola razon para
+cambiar.
 
-### Funciones tipadas (mínimo 3 requerido)
+```
+ts/
+├── index.ts                      Configuracion de Express y arranque
+├── types.ts                      Modelos del dominio y AppError
+├── routes/
+│   ├── creatureRoutes.ts         Rutas REST del catalogo
+│   └── labRoutes.ts              Rutas del laboratorio
+├── controllers/
+│   ├── creatureController.ts     Traduce HTTP <-> servicio (catalogo)
+│   └── labController.ts          Traduce HTTP <-> servicio (laboratorio)
+├── services/
+│   ├── creatureService.ts        Logica de negocio y estado en memoria
+│   └── labService.ts             Orquesta los cruces y el historial
+├── middleware/
+│   ├── requestLogger.ts          requestId + logging
+│   ├── validation.ts             Validacion de entrada
+│   ├── notFound.ts               404 en JSON para rutas desconocidas
+│   └── errorHandler.ts           Manejo centralizado de errores
+├── lib/
+│   ├── lab.ts                    Motor asincrono de cruces
+│   └── registry.ts               Historial encapsulado en un closure
+└── data/
+    └── species.ts                Catalogo de especies y reglas de compatibilidad
+```
 
-- `findSpecies(id: SpeciesId): Species | undefined`
-- `areCompatible(speciesA: Species, speciesB: Species): boolean`
-- `crossSpecies(speciesA: Species, speciesB: Species, registry: Registry, options?: CrossOptions): Promise<Creature>`
-- `createRegistry(): Registry`
+Responsabilidad de cada capa:
 
-### Qué detectó TypeScript durante la migración
+- **routes**: declaran que verbo y ruta existen, y que middleware corre antes.
+- **controllers**: leen `req`, delegan al servicio y eligen el codigo de estado.
+  No contienen reglas de negocio.
+- **services**: concentran las reglas y son el unico lugar que toca el estado.
+- **lib / data**: el dominio puro, sin ninguna dependencia de Express.
 
-- **Tipos de Node faltantes**: al usar `process.exitCode` en `ts/index.ts`, `tsc` lanzó `TS2591: Cannot find name 'process'` y sugirió instalar `@types/node`. Se resolvió instalando el paquete y agregando `"types": ["node"]` en `tsconfig.json`.
-- **Resolución de módulos ESM**: con `module`/`moduleResolution` en `NodeNext`, TypeScript exige que los `import` relativos usen extensión `.js` (aunque el archivo fuente sea `.ts`), ya que así se resolverán una vez compilados. Sin la extensión, `tsc` no encuentra el módulo.
-- **Unión literal como barrera de entrada**: al probar a propósito un cruce con una raza inventada (`["dragon", "lobo"]`), `tsc` lo rechazó con `TS2322: Type '"lobo"' is not assignable to type 'SpeciesId'`, antes de que el programa llegara a ejecutarse. En la versión JavaScript ese mismo error solo se habría notado en tiempo de ejecución (`findSpecies` devolviendo `undefined`).
-- **Narrowing de uniones discriminadas**: gracias al campo `status` en `RegistryEntry`, filtrar con type guards (`entry is SuccessEntry`) permite que `getSuccessful()` devuelva `SuccessEntry[]` sin necesidad de castear manualmente `result` o `reason`.
+Esa ultima separacion es la que permite que `lib/lab.ts` no sepa que existe una
+API: recibe especies y un registro, y devuelve una criatura.
 
-### Aprendizajes
+## Modelo de dominio
 
-Migrar a TypeScript obligó a nombrar explícitamente conceptos que en la versión JS quedaban implícitos en la forma de los objetos (una entrada exitosa vs. una rechazada, qué razas existen realmente). El mayor beneficio no fue atrapar bugs de lógica, sino mover validaciones que antes solo se veían en tiempo de ejecución (raza inexistente, campo faltante) al momento de compilar.
+El recurso principal es `Creature`, con siete campos obligatorios tipados:
+
+```ts
+export interface Creature {
+  id: string;
+  name: string;
+  species: string;
+  habitat: string;
+  rarity: "comun" | "raro" | "epico" | "legendario";
+  powerLevel: number;
+  description: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  parents?: [string, string];   // solo si nacio en el laboratorio
+  attributes?: Attributes;      // solo si nacio en el laboratorio
+}
+```
+
+Decisiones de modelado que vale la pena senalar:
+
+- `rarity` es una union literal, no un `string`: los valores invalidos se
+  detectan al compilar, no en produccion.
+- El historial del laboratorio es una **union discriminada** por el campo
+  `status`, de modo que TypeScript sabe que una entrada `rejected` tiene
+  `reason` y una `success` tiene `result`:
+
+  ```ts
+  type RegistryEntry = SuccessEntry | RejectedEntry;
+  ```
+
+- `UpdateCreatureInput` se deriva con `Partial<CreateCreatureInput>`, asi que
+  `PATCH` no puede desincronizarse de `POST`.
+- `parents` es una tupla `[string, string]`: exactamente dos padres, ni uno ni
+  tres.
+
+## Endpoints
+
+### Catalogo de criaturas
+
+| Metodo | Ruta                  | Descripcion              | Codigos               |
+| ------ | --------------------- | ------------------------ | --------------------- |
+| GET    | `/api/creatures`      | Listar (acepta filtros)  | 200, 400              |
+| GET    | `/api/creatures/:id`  | Obtener por id           | 200, 404              |
+| POST   | `/api/creatures`      | Crear                    | 201, 400              |
+| PUT    | `/api/creatures/:id`  | Reemplazar completo      | 200, 400, 404         |
+| PATCH  | `/api/creatures/:id`  | Actualizar parcial       | 200, 400, 404         |
+| DELETE | `/api/creatures/:id`  | Eliminar                 | 200, 404              |
+
+Filtros del listado, combinables: `?rarity=`, `?species=`, `?tag=`, `?minPower=`
+
+```bash
+curl "http://localhost:3000/api/creatures?rarity=epico&minPower=50"
+```
+
+### Laboratorio
+
+| Metodo | Ruta                 | Descripcion                    | Codigos            |
+| ------ | -------------------- | ------------------------------ | ------------------ |
+| GET    | `/api/lab/species`   | Especies disponibles           | 200                |
+| POST   | `/api/lab/cross`     | Cruzar dos especies            | 201, 400, 409      |
+| GET    | `/api/lab/registry`  | Historial de cruces + resumen  | 200                |
+
+### Servicio
+
+| Metodo | Ruta       | Descripcion       | Codigos |
+| ------ | ---------- | ----------------- | ------- |
+| GET    | `/health`  | Estado del server | 200     |
+
+### Criterio de codigos de estado
+
+- `200` lectura o actualizacion correcta
+- `201` recurso creado (POST de criatura o de cruce)
+- `400` entrada invalida: falta un campo, tipo incorrecto, JSON malformado
+- `404` el recurso o la ruta no existen
+- `409` el cruce viola una regla del dominio (especies incompatibles)
+- `500` fallo inesperado del servidor
+
+El `409` es deliberado: un cruce incompatible no es un error de formato del
+cliente ni una falla del servidor, es un conflicto con el estado del dominio.
+
+## Middleware
+
+Se ejecutan en este orden, definido en `ts/index.ts`:
+
+1. **`requestId`** — asigna un UUID a cada peticion, o respeta el que venga en
+   la cabecera `x-request-id`. Va antes que `express.json()` a proposito: asi
+   incluso una peticion con JSON malformado queda trazada con su id.
+2. **`requestLogger`** — imprime timestamp, requestId, metodo y URL.
+3. **`express.json()`** — parseo del cuerpo (middleware integrado de Express).
+4. **`validateCreature`** — a nivel de ruta, valida el payload de `POST`, `PUT`
+   y `PATCH`. Exige todos los campos en `POST`/`PUT` y solo valida los
+   presentes en `PATCH`.
+5. **`notFound`** — convierte cualquier ruta no registrada en un `AppError` 404,
+   para que la API responda JSON y no la pagina HTML por defecto de Express.
+6. **`errorHandler`** — manejador centralizado de errores.
+
+### Manejo centralizado de errores
+
+Ningun controlador arma una respuesta de error por su cuenta: lanzan o pasan el
+error a `next()`, y `errorHandler` decide el formato y el codigo.
+
+```ts
+// types.ts
+export class AppError extends Error {
+  statusCode: number;
+}
+```
+
+`errorHandler` distingue tres casos:
+
+- **`AppError`** — error de dominio previsto, responde con su `statusCode`.
+- **`SyntaxError` con `body`** — JSON malformado. Es culpa del cliente, asi que
+  responde `400` en lugar de dejarlo escalar a `500`.
+- **Cualquier otro** — `500`, con el mensaje original en `details`.
+
+Toda respuesta de error lleva el `requestId`, que es el mismo que aparece en el
+log del servidor. Eso permite tomar el id de un error reportado por el cliente y
+encontrar la linea exacta en el log.
+
+```json
+{
+  "error": "No se encontró una criatura con id c-999",
+  "status": 404,
+  "requestId": "dabd7246-0c25-4610-9ef3-f6b9574d2917"
+}
+```
+
+## Node.js asincrono
+
+El endpoint `POST /api/lab/cross` es el que muestra el modelo no bloqueante de
+Node. `crossSpecies` es `async` y espera un delay simulado que representa el
+procesamiento del laboratorio:
+
+```ts
+await simulateLabDelay(delayMs);
+```
+
+Durante esa espera el event loop queda libre: el servidor sigue atendiendo
+otras peticiones en lugar de quedarse bloqueado. Se puede comprobar lanzando un
+cruce lento y otra peticion en paralelo:
+
+```bash
+curl -X POST http://localhost:3000/api/lab/cross \
+  -H "Content-Type: application/json" \
+  -d '{"speciesA":"fenix","speciesB":"slime","delayMs":3000}' &
+curl http://localhost:3000/api/creatures   # responde de inmediato
+```
+
+Como el controlador es `async`, sus rechazos se pasan explicitamente a `next()`
+para que lleguen al manejador centralizado de errores.
+
+## Pruebas manuales
+
+Estan documentadas en **[requests.md](./requests.md)**, con el request y la
+respuesta real de cada endpoint: los cuatro verbos del CRUD, los filtros, los
+tres endpoints del laboratorio y seis escenarios de error distintos.
+
+## Flujo de trabajo Git
+
+El desarrollo se hizo en ramas por funcionalidad, integradas a `main` mediante
+pull requests:
+
+- `feature/javascript` — prototipo inicial del dominio en JavaScript
+- `feature/typescript` — migracion del dominio a TypeScript
+- `feature/api-rest` — capa REST: Express, capas, middleware y documentacion
+
+La carpeta `js/` conserva el prototipo original en JavaScript como referencia
+de la evolucion del proyecto; el codigo que se ejecuta es el de `ts/`.
+
+## Cumplimiento del entregable
+
+| Requisito                                    | Donde |
+| -------------------------------------------- | ----- |
+| Proyecto Node.js con Express y TypeScript    | `package.json`, `tsconfig.json` |
+| Capas routes / controllers / services / tipos| `ts/routes`, `ts/controllers`, `ts/services`, `ts/types.ts` |
+| Recurso con minimo 5 campos tipados          | `Creature`: 7 obligatorios + 2 opcionales |
+| CRUD completo en memoria                     | `ts/services/creatureService.ts` |
+| Minimo 5 rutas REST                          | 10 rutas (6 del catalogo, 3 del laboratorio, 1 de salud) |
+| Minimo 2 middlewares personalizados          | `requestId`, `requestLogger`, `validateCreature`, `notFound` |
+| Middleware centralizado de errores           | `ts/middleware/errorHandler.ts` |
+| Validacion de entrada                        | `ts/middleware/validation.ts` |
+| Pruebas manuales documentadas                | [`requests.md`](./requests.md) |
+| Flujo Git con ramas y commits descriptivos   | Ramas `feature/*` + pull requests |

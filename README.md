@@ -94,7 +94,10 @@ API: recibe especies y un registro, y devuelve una criatura.
 
 ## Modelo de dominio
 
-El recurso principal es `Creature`, con siete campos obligatorios tipados:
+El recurso principal es `Creature`, con diez campos obligatorios tipados:
+siete los envia el cliente y tres los asigna el servidor (`id`, `createdAt` y
+`updatedAt`). Ademas tiene dos campos opcionales que solo existen en las
+criaturas nacidas en el laboratorio.
 
 ```ts
 export interface Creature {
@@ -270,7 +273,7 @@ de la evolucion del proyecto; el codigo que se ejecuta es el de `ts/`.
 | -------------------------------------------- | ----- |
 | Proyecto Node.js con Express y TypeScript    | `package.json`, `tsconfig.json` |
 | Capas routes / controllers / services / tipos| `ts/routes`, `ts/controllers`, `ts/services`, `ts/types.ts` |
-| Recurso con minimo 5 campos tipados          | `Creature`: 7 obligatorios + 2 opcionales |
+| Recurso con minimo 5 campos tipados          | `Creature`: 10 obligatorios + 2 opcionales |
 | CRUD completo en memoria                     | `ts/services/creatureService.ts` |
 | Minimo 5 rutas REST                          | 10 rutas (6 del catalogo, 3 del laboratorio, 1 de salud) |
 | Minimo 2 middlewares personalizados          | `requestId`, `requestLogger`, `validateCreature`, `notFound` |

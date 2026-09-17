@@ -61,10 +61,21 @@ export async function crossSpecies(
 
     await simulateLabDelay(delayMs);
 
+    const attributes = deriveAttributes(speciesA, speciesB, deriveOptions);
+    const now = new Date().toISOString();
     const creature: Creature = {
+      id: `lab-${Date.now()}`,
       name: generateHybridName(speciesA, speciesB),
+      species: `${speciesA.name} x ${speciesB.name}`,
+      habitat: "Laboratorio de cruces",
+      rarity: "epico",
+      powerLevel: Math.round((attributes.fuerza + attributes.velocidad + attributes.magia + attributes.resistencia) / 4),
+      description: `Híbrido generado a partir de ${speciesA.name} y ${speciesB.name}.`,
+      tags: [speciesA.id, speciesB.id, "hibrido"],
+      createdAt: now,
+      updatedAt: now,
       parents: [speciesA.name, speciesB.name],
-      attributes: deriveAttributes(speciesA, speciesB, deriveOptions),
+      attributes,
     };
 
     registry.addEntry({

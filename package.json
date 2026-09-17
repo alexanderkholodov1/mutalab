@@ -1,15 +1,19 @@
 {
   "name": "mutalab",
   "version": "0.1.0",
-  "description": "Laboratorio de cruce de criaturas mutantes, con version JavaScript y version TypeScript",
+  "description": "API REST de criaturas mutantes y micro-mundos creativos con Express y TypeScript",
   "type": "module",
-  "main": "js/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node js/index.js",
     "build": "tsc",
-    "start:ts": "npm run build && node dist/index.js"
+    "start": "npm run build && node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^26.4.0",
     "typescript": "^7.0.2"
   }

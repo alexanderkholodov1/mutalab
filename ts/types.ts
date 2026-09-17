@@ -1,9 +1,3 @@
-// Formas de datos centrales del laboratorio. Definir esto explícitamente es
-// lo que la versión JavaScript dejaba implícito.
-
-// Unión literal: identifica las razas válidas del catálogo. Cualquier string
-// que no sea uno de estos valores es rechazado por el compilador, no solo en
-// tiempo de ejecución.
 export type SpeciesId = "dragon" | "conejo" | "golem" | "fenix" | "slime";
 
 export interface Attributes {
@@ -21,12 +15,20 @@ export interface Species {
 }
 
 export interface Creature {
+  id: string;
   name: string;
-  parents: [string, string];
-  attributes: Attributes;
+  species: string;
+  habitat: string;
+  rarity: "comun" | "raro" | "epico" | "legendario";
+  powerLevel: number;
+  description: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  parents?: [string, string];
+  attributes?: Attributes;
 }
 
-// Unión literal para el estado de un cruce.
 export type CrossStatus = "success" | "rejected";
 
 export interface SuccessEntry {
@@ -43,8 +45,6 @@ export interface RejectedEntry {
   timestamp: string;
 }
 
-// Unión discriminada por "status": TypeScript reduce el tipo dentro de un
-// `if (entry.status === "success")` sin necesidad de casteos manuales.
 export type RegistryEntry = SuccessEntry | RejectedEntry;
 
 export interface DeriveOptions {
@@ -60,4 +60,26 @@ export interface Registry {
   getAll(): RegistryEntry[];
   getSuccessful(): SuccessEntry[];
   getFailed(): RejectedEntry[];
+}
+
+export interface CreateCreatureInput {
+  name: string;
+  species: string;
+  habitat: string;
+  rarity: "comun" | "raro" | "epico" | "legendario";
+  powerLevel: number;
+  description: string;
+  tags: string[];
+}
+
+export type UpdateCreatureInput = Partial<CreateCreatureInput>;
+
+export class AppError extends Error {
+  statusCode: number;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+  }
 }
